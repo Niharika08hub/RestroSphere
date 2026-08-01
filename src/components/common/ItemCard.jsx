@@ -1,10 +1,20 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { auth } from "../../firebase/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import "./ItemCard.css";
-
 const ItemCard = ({ item, onClaim, onDelete }) => {
   const navigate = useNavigate();
+  const [currentUser, setCurrentUser] = useState(null);
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (user) => {
+    setCurrentUser(user);
+  });
 
+  return () => unsubscribe();
+}, []);
+const isOwner =
+  auth.currentUser && item.ownerId === auth.currentUser.uid;
 const handleEdit = (e) => {
   e.preventDefault();
   e.stopPropagation();
@@ -132,30 +142,32 @@ return (
 
     <div className="card-actions">
 
-      {!item.claimed && (
-        <>
-          <button
-            className="edit-btn"
-            onClick={handleEdit}
-          >
-             Edit
-          </button>
+     {isOwner && !item.claimed && (
+  <>
+    <button
+      className="edit-btn"
+      onClick={handleEdit}
+    >
+      Edit
+    </button>
 
-          <button
-            className="claim-btn"
-            onClick={handleClaim}
-          >
-            Mark as Claimed
-          </button>
-        </>
-      )}
+    <button
+      className="claim-btn"
+      onClick={handleClaim}
+    >
+      Mark as Claimed
+    </button>
+  </>
+)}
 
-      <button
-        className="delete-btn"
-        onClick={handleDelete}
-      >
-         Delete
-      </button>
+{isOwner && (
+  <button
+    className="delete-btn"
+    onClick={handleDelete}
+  >
+    Delete
+  </button>
+)}
 
     </div>
 

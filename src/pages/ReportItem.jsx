@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { getItems, updateItem } from "../utils/localStorage";
+import { auth } from "../firebase/firebase";
+import { getItems, updateItem, addItem } from "../utils/firebaseStorage";
 import "./ReportItem.css";
 
 const ReportItem = () => {
@@ -37,28 +38,43 @@ const ReportItem = () => {
     "Other",
   ];
 
+ 
+
+
+
   useEffect(() => {
-    if (!isEditMode) return;
+  if (!isEditMode) return;
 
-    const items = getItems();
-    const existingItem = items.find((item) => item.id === id);
+  const loadItem = async () => {
+    try {
+      const items = await getItems();
 
-    if (!existingItem) return;
+      console.log("Items:", items);
+      console.log("Array?", Array.isArray(items));
 
-    setFormData({
-      title: existingItem.title || "",
-      description: existingItem.description || "",
-      category: existingItem.category || "",
-      type: existingItem.type || "lost",
-      location: existingItem.location || "",
-      date: existingItem.date || "",
-      contactName: existingItem.contactName || "",
-      contactEmail: existingItem.contactEmail || "",
-      contactPhone: existingItem.contactPhone || "",
-      image: existingItem.image || null,
-    });
-  }, [id, isEditMode]);
+      const existingItem = items.find((item) => item.id === id);
 
+      if (!existingItem) return;
+
+      setFormData({
+        title: existingItem.title || "",
+        description: existingItem.description || "",
+        category: existingItem.category || "",
+        type: existingItem.type || "lost",
+        location: existingItem.location || "",
+        date: existingItem.date || "",
+        contactName: existingItem.contactName || "",
+        contactEmail: existingItem.contactEmail || "",
+        contactPhone: existingItem.contactPhone || "",
+        image: existingItem.image || null,
+      });
+    } catch (error) {
+      console.error("Error loading item:", error);
+    }
+  };
+
+  loadItem();
+}, [id, isEditMode]);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
 
@@ -103,29 +119,27 @@ const ReportItem = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-
+if (!auth.currentUser) {
+  alert("Please login with Google to report an item.");
+  setIsSubmitting(false);
+  return;
+}
     try {
       if (isEditMode) {
-        updateItem(id, {
-          ...formData,
-        });
+       await updateItem(id, {
+  ...formData,
+});
       } else {
-        const items = getItems();
+   await addItem({
+  ...formData,
+  status: "unclaimed",
 
-        const newItem = {
-          ...formData,
-          id: Date.now().toString(),
-          dateReported: new Date().toISOString(),
-          claimed: false,
-          status: "unclaimed",
-        };
+  ownerId: auth.currentUser.uid,
+  ownerName: auth.currentUser.displayName,
+  ownerEmail: auth.currentUser.email,
+});
 
-        localStorage.setItem(
-          "lostFoundItems",
-          JSON.stringify([...items, newItem])
-        );
-console.log("After Save:", localStorage.getItem("lostFoundItems"));
-        resetForm();
+resetForm();
       }
 
       await new Promise((resolve) => setTimeout(resolve, 1000));
@@ -408,6 +422,5 @@ console.log("After Save:", localStorage.getItem("lostFoundItems"));
       )}
     </div>
   );
-};
-
+}
 export default ReportItem;
