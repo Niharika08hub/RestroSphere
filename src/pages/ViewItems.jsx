@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
+
+import {
+  getItems,
+  updateItem,
+  deleteItem,
+} from "../utils/firebaseStorage";
+
 import ItemCard from "../components/common/ItemCard";
 import "./ViewItems.css";
 
@@ -26,27 +33,25 @@ status: "all",
     "Other",
   ];
 
-  useEffect(() => {
-    const loadItems = () => {
-      try {
-        const storedItems = localStorage.getItem("lostFoundItems");
-        console.log("On Load:", storedItems);
-        const parsedItems = storedItems ? JSON.parse(storedItems) : [];
-        console.log("Stored:", storedItems);
-console.log("Parsed:", parsedItems);
-        setItems(parsedItems);
-        setFilteredItems(parsedItems);
-      } catch (error) {
-        console.error("Error loading items:", error);
-        setItems([]);
-        setFilteredItems([]);
-      } finally {
-        setLoading(false);
-      }
-    };
+ useEffect(() => {
+  const loadItems = async () => {
+    try {
+      const data = await getItems();
+console.log("Firebase Data:", data);
 
-    loadItems();
-  }, []);
+      setItems(data);
+      setFilteredItems(data);
+    } catch (error) {
+      console.error("Error loading items:", error);
+      setItems([]);
+      setFilteredItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  loadItems();
+}, []);
 
   useEffect(() => {
     let filtered = [...items];
@@ -88,36 +93,41 @@ if (filters.status === "unclaimed") {
     }));
   };
 
-const handleMarkAsClaimed = (itemId) => {
-  const updatedItems = items.map((item) =>
-    item.id === itemId
-      ? {
-          ...item,
-          claimed: true,
-          claimedDate: new Date().toISOString(),
-        }
-      : item
-  );
+const handleMarkAsClaimed = async (itemId) => {
+  try {
+    await updateItem(itemId, {
+      claimed: true,
+      status: "claimed",
+      claimedDate: new Date().toISOString(),
+    });
 
-  setItems(updatedItems);
-  setFilteredItems(updatedItems);
+    const updatedItems = await getItems();
 
-  localStorage.setItem(
-    "lostFoundItems",
-    JSON.stringify(updatedItems)
-  );
+    setItems(updatedItems);
+    setFilteredItems(updatedItems);
+  } catch (error) {
+    console.error("Claim failed:", error);
+  }
 };
-const handleDelete = (itemId) => {
+const handleDelete = async (itemId) => {
   const confirmDelete = window.confirm(
     "Are you sure you want to delete this item?"
   );
 
   if (!confirmDelete) return;
 
-  const updatedItems = items.filter((item) => item.id !== itemId);
+  try {
+    // Firestore se delete
+    await deleteItem(itemId);
 
-  setItems(updatedItems);
-  localStorage.setItem("lostFoundItems", JSON.stringify(updatedItems));
+    // Firestore se latest data dobara lao
+    const updatedItems = await getItems();
+
+    setItems(updatedItems);
+    setFilteredItems(updatedItems);
+  } catch (error) {
+    console.error("Delete failed:", error);
+  }
 };
   const clearFilters = () => {
     setFilters({

@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from "react";
+import { auth } from "../../firebase/firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { Link, useLocation } from "react-router-dom";
 import ToggleTheme from "./ToggleTheme";
+import { loginWithGoogle, logout } from "../../utils/auth";
 import "./Header.css";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [user, setUser] = useState(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -16,6 +20,13 @@ const Header = () => {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+  useEffect(() => {
+  const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+    setUser(currentUser);
+  });
+
+  return () => unsubscribe();
+}, []);
 
   useEffect(() => {
     setIsMenuOpen(false);
@@ -74,6 +85,21 @@ const Header = () => {
 
         <div className="header-actions">
           <ToggleTheme />
+         {!user ? (
+  <button onClick={loginWithGoogle} className="login-btn">
+    Login
+  </button>
+) : (
+  <div className="user-section">
+    <span className="user-name">
+      {user.displayName}
+    </span>
+
+    <button onClick={logout} className="logout-btn">
+      Logout
+    </button>
+  </div>
+)}
           <button
             className={`mobile-menu-btn ${isMenuOpen ? "active" : ""}`}
             onClick={toggleMenu}

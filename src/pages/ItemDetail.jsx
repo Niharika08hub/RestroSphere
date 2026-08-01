@@ -1,10 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import {
-  getItems,
-  updateItem,
-  deleteItem,
-} from "../utils/localStorage";
+import { auth } from "../firebase/firebase";
+import { getItems, updateItem, deleteItem } from "../utils/firebaseStorage";
 import "./ItemDetail.css";
 const ItemDetail = () => {
 
@@ -15,10 +12,13 @@ const ItemDetail = () => {
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
+const isOwner =
+  auth.currentUser && item?.ownerId === auth.currentUser.uid;
+ useEffect(() => {
+  const loadItem = async () => {
+    try {
+      const items = await getItems();
 
-  useEffect(() => {
-    const loadItem = () => {
-      const items = getItems();
       const foundItem = items.find((item) => item.id === id);
 
       if (foundItem) {
@@ -26,33 +26,34 @@ const ItemDetail = () => {
       } else {
         navigate("/view-items");
       }
+    } catch (error) {
+      console.error(error);
+    } finally {
       setLoading(false);
-    };
-
-    loadItem();
-  }, [id, navigate]);
-
-  const handleMarkAsClaimed = () => {
-    setShowModal(true);
+    }
   };
 
-  const confirmMarkAsClaimed = () => {
-  updateItem(id, {
-    claimed: true,
-    claimedDate: new Date().toISOString(),
-  });
+  loadItem();
+}, [id, navigate]);
+ const confirmMarkAsClaimed = async () => {
+ await updateItem(id, {
+  
+  claimed: true,
+  status: "claimed",
+  claimedDate: new Date().toISOString(),
+});
 
-  setItem({
-    ...item,
-    claimed: true,
-    claimedDate: new Date().toISOString(),
-  });
-
+ setItem({
+  ...item,
+  claimed: true,
+  status: "claimed",
+  claimedDate: new Date().toISOString(),
+});
   setShowModal(false);
 
   setTimeout(() => {
     navigate("/view-items");
-  }, 2000);
+  }, 1000);
 };
 
   const formatDate = (dateString) => {
@@ -89,10 +90,10 @@ const ItemDetail = () => {
       </div>
     );
   }
-const handleDelete = () => {
+const handleDelete = async () => {
   if (!window.confirm("Delete this item?")) return;
 
-  deleteItem(id);
+  await deleteItem(id);
 
   navigate("/view-items");
 };
@@ -194,33 +195,34 @@ const handleDelete = () => {
           </div>
 <div className="item-actions">
 
-  {!item.claimed && (
+  {isOwner && !item.claimed && (
     <>
       <button
         className="edit-btn"
         onClick={() => navigate(`/edit/${item.id}`)}
       >
-         Edit
+        Edit
       </button>
 
       <button
         className="claim-btn"
-        onClick={handleMarkAsClaimed}
+        onClick={confirmMarkAsClaimed}
       >
         Mark as Claimed
       </button>
     </>
   )}
 
-  <button
-    className="delete-btn"
-    onClick={handleDelete}
-  >
-     Delete
-  </button>
+  {isOwner && (
+    <button
+      className="delete-btn"
+      onClick={handleDelete}
+    >
+      Delete
+    </button>
+  )}
 
 </div>
-
 
           {item.claimed && (
             <div className="claimed-notice">
