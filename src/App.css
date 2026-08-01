@@ -1,4 +1,5 @@
 /* Global CSS Variables for Light Theme */
+
 :root {
   --primary-color: #2563eb;
   --primary-hover: #1d4ed8;
@@ -68,9 +69,12 @@ body {
   flex-direction: column;
 }
 
-.main-content {
-  flex: 1;
-  padding: 2rem 0;
+.main-content{
+  min-height: calc(100vh - 180px);
+
+  animation: pageFade .45s ease;
+
+  will-change: opacity, transform;
 }
 
 /* Container */
@@ -414,6 +418,8 @@ body {
   overflow-y: auto;
 }
 
+
+
 /* Status badges */
 .badge {
   display: inline-flex;
@@ -437,4 +443,18 @@ body {
 .badge-danger {
   background-color: rgb(239 68 68 / 0.1);
   color: var(--danger-color);
+}
+
+@keyframes pageFade{
+
+  from{
+    opacity:0;
+    transform:translateY(18px);
+  }
+
+  to{
+    opacity:1;
+    transform:translateY(0);
+  }
+
 }

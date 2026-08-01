@@ -11,7 +11,7 @@ const ViewItems = () => {
     search: "",
     type: "all",
     category: "all",
-    status: "unclaimed",
+status: "all",
   });
 
   const categories = [
@@ -30,7 +30,10 @@ const ViewItems = () => {
     const loadItems = () => {
       try {
         const storedItems = localStorage.getItem("lostFoundItems");
+        console.log("On Load:", storedItems);
         const parsedItems = storedItems ? JSON.parse(storedItems) : [];
+        console.log("Stored:", storedItems);
+console.log("Parsed:", parsedItems);
         setItems(parsedItems);
         setFilteredItems(parsedItems);
       } catch (error) {
@@ -66,9 +69,14 @@ const ViewItems = () => {
       filtered = filtered.filter((item) => item.category === filters.category);
     }
 
-    if (filters.status !== "all") {
-      filtered = filtered.filter((item) => item.status === filters.status);
-    }
+    if (filters.status === "claimed") {
+  filtered = filtered.filter((item) => item.claimed);
+}
+
+if (filters.status === "unclaimed") {
+  filtered = filtered.filter((item) => !item.claimed);
+}
+
 
     setFilteredItems(filtered);
   }, [items, filters]);
@@ -80,29 +88,43 @@ const ViewItems = () => {
     }));
   };
 
-  const handleMarkAsClaimed = (itemId, verify = false) => {
-    if (verify) {
-      const updatedItems = items.filter((item) => item.id !== itemId);
-      setItems(updatedItems);
-      localStorage.setItem("lostFoundItems", JSON.stringify(updatedItems));
-    } else {
-      const updatedItems = items.map((item) =>
-        item.id === itemId
-          ? { ...item, status: "claimed", claimed: true }
-          : item
-      );
-      setItems(updatedItems);
-      localStorage.setItem("lostFoundItems", JSON.stringify(updatedItems));
-    }
-  };
+const handleMarkAsClaimed = (itemId) => {
+  const updatedItems = items.map((item) =>
+    item.id === itemId
+      ? {
+          ...item,
+          claimed: true,
+          claimedDate: new Date().toISOString(),
+        }
+      : item
+  );
 
+  setItems(updatedItems);
+  setFilteredItems(updatedItems);
+
+  localStorage.setItem(
+    "lostFoundItems",
+    JSON.stringify(updatedItems)
+  );
+};
+const handleDelete = (itemId) => {
+  const confirmDelete = window.confirm(
+    "Are you sure you want to delete this item?"
+  );
+
+  if (!confirmDelete) return;
+
+  const updatedItems = items.filter((item) => item.id !== itemId);
+
+  setItems(updatedItems);
+  localStorage.setItem("lostFoundItems", JSON.stringify(updatedItems));
+};
   const clearFilters = () => {
     setFilters({
       search: "",
       type: "all",
       category: "all",
-      status: "unclaimed",
-    });
+status: "all",    });
   };
 
   if (loading) {
@@ -226,8 +248,7 @@ const ViewItems = () => {
           <div className="stat">
             <span className="stat-number">
               {
-                filteredItems.filter((item) => item.status === "unclaimed")
-                  .length
+                filteredItems.filter((item) => !item.claimed).length
               }
             </span>
             <span className="stat-label">Available</span>
@@ -264,11 +285,12 @@ const ViewItems = () => {
           ) : (
             <div className="items-grid">
               {filteredItems.map((item) => (
-                <ItemCard
-                  key={item.id}
-                  item={item}
-                  onClaim={handleMarkAsClaimed}
-                />
+               <ItemCard
+  key={item.id}
+  item={item}
+  onClaim={handleMarkAsClaimed}
+  onDelete={handleDelete}
+/>
               ))}
             </div>
           )}

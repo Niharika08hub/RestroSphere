@@ -37,8 +37,8 @@ const Header = () => {
     <header className={`header ${scrolled ? "scrolled" : ""}`}>
       <div className="container">
         <Link to="/" className="logo" onClick={closeMenu}>
-          <span className="logo-icon">📚</span>
-          <span className="logo-text">ABES Lost & Found</span>
+          <span className="logo-icon"></span>
+          <span className="logo-text">IGDTUW Lost & Found</span>
           <div className="logo-underline"></div>
         </Link>
 
@@ -48,7 +48,7 @@ const Header = () => {
             className={`nav-link ${isActive("/") ? "active" : ""}`}
             onClick={closeMenu}
           >
-            <span className="nav-icon">🏠</span>
+            <span className="nav-icon"></span>
             <span className="nav-text">Home</span>
             <div className="nav-indicator"></div>
           </Link>
@@ -57,7 +57,7 @@ const Header = () => {
             className={`nav-link ${isActive("/report") ? "active" : ""}`}
             onClick={closeMenu}
           >
-            <span className="nav-icon">📝</span>
+            <span className="nav-icon"></span>
             <span className="nav-text">Report Item</span>
             <div className="nav-indicator"></div>
           </Link>
@@ -66,7 +66,7 @@ const Header = () => {
             className={`nav-link ${isActive("/view-items") ? "active" : ""}`}
             onClick={closeMenu}
           >
-            <span className="nav-icon">🔍</span>
+            <span className="nav-icon"></span>
             <span className="nav-text">View Items</span>
             <div className="nav-indicator"></div>
           </Link>
@@ -89,7 +89,6 @@ const Header = () => {
         </div>
       </div>
 
-      {isMenuOpen && <div className="mobile-overlay" onClick={closeMenu}></div>}
     </header>
   );
 };

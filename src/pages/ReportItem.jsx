@@ -1,9 +1,14 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { getItems, updateItem } from "../utils/localStorage";
 import "./ReportItem.css";
 
 const ReportItem = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
+
+  const isEditMode = Boolean(id);
+
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -16,8 +21,10 @@ const ReportItem = () => {
     contactPhone: "",
     image: null,
   });
+
   const [showModal, setShowModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const categories = [
     "Electronics",
     "Clothing",
@@ -29,62 +36,108 @@ const ReportItem = () => {
     "Documents",
     "Other",
   ];
+
+  useEffect(() => {
+    if (!isEditMode) return;
+
+    const items = getItems();
+    const existingItem = items.find((item) => item.id === id);
+
+    if (!existingItem) return;
+
+    setFormData({
+      title: existingItem.title || "",
+      description: existingItem.description || "",
+      category: existingItem.category || "",
+      type: existingItem.type || "lost",
+      location: existingItem.location || "",
+      date: existingItem.date || "",
+      contactName: existingItem.contactName || "",
+      contactEmail: existingItem.contactEmail || "",
+      contactPhone: existingItem.contactPhone || "",
+      image: existingItem.image || null,
+    });
+  }, [id, isEditMode]);
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
   };
+
   const handleImageChange = (e) => {
     const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setFormData((prev) => ({
-          ...prev,
-          image: e.target.result,
-        }));
-      };
-      reader.readAsDataURL(file);
-    }
+
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (event) => {
+      setFormData((prev) => ({
+        ...prev,
+        image: event.target.result,
+      }));
+    };
+
+    reader.readAsDataURL(file);
   };
+
+  const resetForm = () => {
+    setFormData({
+      title: "",
+      description: "",
+      category: "",
+      type: "lost",
+      location: "",
+      date: "",
+      contactName: "",
+      contactEmail: "",
+      contactPhone: "",
+      image: null,
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
+
     try {
-      const existingItems = JSON.parse(
-        localStorage.getItem("lostFoundItems") || "[]"
-      );
-      const newItem = {
-        id: Date.now().toString(),
-        ...formData,
-        dateReported: new Date().toISOString(),
-        status: "unclaimed",
-      };
-      const updatedItems = [...existingItems, newItem];
-      localStorage.setItem("lostFoundItems", JSON.stringify(updatedItems));
+      if (isEditMode) {
+        updateItem(id, {
+          ...formData,
+        });
+      } else {
+        const items = getItems();
+
+        const newItem = {
+          ...formData,
+          id: Date.now().toString(),
+          dateReported: new Date().toISOString(),
+          claimed: false,
+          status: "unclaimed",
+        };
+
+        localStorage.setItem(
+          "lostFoundItems",
+          JSON.stringify([...items, newItem])
+        );
+console.log("After Save:", localStorage.getItem("lostFoundItems"));
+        resetForm();
+      }
+
       await new Promise((resolve) => setTimeout(resolve, 1000));
       setShowModal(true);
-      setFormData({
-        title: "",
-        description: "",
-        category: "",
-        type: "lost",
-        location: "",
-        date: "",
-        contactName: "",
-        contactEmail: "",
-        contactPhone: "",
-        image: null,
-      });
     } catch (error) {
       console.error("Error submitting item:", error);
-      alert("Error submitting item. Please try again.");
+      alert("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
   const closeModal = () => {
     setShowModal(false);
     navigate("/view-items");
@@ -94,7 +147,10 @@ const ReportItem = () => {
     <div className="report-item">
       <div className="container">
         <div className="report-header">
-          <h1 className="report-title">Report Lost or Found Item</h1>
+          <h1 className="report-title">
+            {isEditMode ? "Edit Item" : "Report Lost or Found Item"}
+          </h1>
+
           <p className="report-description">
             Help your fellow students by reporting items you've lost or found on
             campus.
@@ -105,6 +161,7 @@ const ReportItem = () => {
           <form onSubmit={handleSubmit} className="report-form">
             <div className="form-group">
               <label className="form-label">Item Type *</label>
+
               <div className="radio-group">
                 <label className="radio-label">
                   <input
@@ -113,10 +170,10 @@ const ReportItem = () => {
                     value="lost"
                     checked={formData.type === "lost"}
                     onChange={handleInputChange}
-                    required
                   />
                   <span className="radio-text">Lost Item</span>
                 </label>
+
                 <label className="radio-label">
                   <input
                     type="radio"
@@ -124,7 +181,6 @@ const ReportItem = () => {
                     value="found"
                     checked={formData.type === "found"}
                     onChange={handleInputChange}
-                    required
                   />
                   <span className="radio-text">Found Item</span>
                 </label>
@@ -132,34 +188,37 @@ const ReportItem = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="title">
+              <label htmlFor="title" className="form-label">
                 Item Title *
               </label>
+
               <input
-                type="text"
                 id="title"
                 name="title"
+                type="text"
+                className="form-input"
                 value={formData.title}
                 onChange={handleInputChange}
-                className="form-input"
-                placeholder="e.g., Blue iPhone 13, Red backpack, etc."
+                placeholder="e.g. Blue iPhone 13"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="category">
+              <label htmlFor="category" className="form-label">
                 Category *
               </label>
+
               <select
                 id="category"
                 name="category"
+                className="form-select"
                 value={formData.category}
                 onChange={handleInputChange}
-                className="form-select"
                 required
               >
                 <option value="">Select a category</option>
+
                 {categories.map((category) => (
                   <option key={category} value={category}>
                     {category}
@@ -169,112 +228,123 @@ const ReportItem = () => {
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="description">
+              <label htmlFor="description" className="form-label">
                 Description *
               </label>
+
               <textarea
                 id="description"
                 name="description"
+                rows="4"
+                className="form-textarea"
                 value={formData.description}
                 onChange={handleInputChange}
-                className="form-textarea"
                 placeholder="Provide details like color, brand, size, etc."
-                rows="4"
                 required
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="location">
+              <label htmlFor="location" className="form-label">
                 {formData.type === "lost"
                   ? "Last Seen Location"
                   : "Found Location"}{" "}
                 *
               </label>
+
               <input
-                type="text"
                 id="location"
                 name="location"
+                type="text"
+                className="form-input"
                 value={formData.location}
                 onChange={handleInputChange}
-                className="form-input"
-                placeholder="e.g., Library, Cafeteria, etc."
+                placeholder="Library, Cafeteria..."
                 required
               />
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="date">
+              <label htmlFor="date" className="form-label">
                 {formData.type === "lost" ? "Date Lost" : "Date Found"} *
               </label>
+
               <input
-                type="date"
                 id="date"
                 name="date"
+                type="date"
+                className="form-input"
                 value={formData.date}
                 onChange={handleInputChange}
-                className="form-input"
                 required
               />
             </div>
 
             <div className="contact-section">
               <h3 className="section-title">Contact Information</h3>
+
               <div className="form-group">
-                <label className="form-label" htmlFor="contactName">
+                <label htmlFor="contactName" className="form-label">
                   Your Name *
                 </label>
+
                 <input
-                  type="text"
                   id="contactName"
                   name="contactName"
+                  type="text"
+                  className="form-input"
                   value={formData.contactName}
                   onChange={handleInputChange}
-                  className="form-input"
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label className="form-label" htmlFor="contactEmail">
+                <label htmlFor="contactEmail" className="form-label">
                   Email Address *
                 </label>
+
                 <input
-                  type="email"
                   id="contactEmail"
                   name="contactEmail"
+                  type="email"
+                  className="form-input"
                   value={formData.contactEmail}
                   onChange={handleInputChange}
-                  className="form-input"
                   required
                 />
               </div>
+
               <div className="form-group">
-                <label className="form-label" htmlFor="contactPhone">
+                <label htmlFor="contactPhone" className="form-label">
                   Phone (Optional)
                 </label>
+
                 <input
-                  type="tel"
                   id="contactPhone"
                   name="contactPhone"
+                  type="tel"
+                  className="form-input"
                   value={formData.contactPhone}
                   onChange={handleInputChange}
-                  className="form-input"
                 />
               </div>
             </div>
 
             <div className="form-group">
-              <label className="form-label" htmlFor="image">
+              <label htmlFor="image" className="form-label">
                 Upload Image (Optional)
               </label>
+
               <input
-                type="file"
                 id="image"
                 name="image"
-                onChange={handleImageChange}
+                type="file"
                 className="form-input file-input"
                 accept="image/*"
+                onChange={handleImageChange}
               />
+
               {formData.image && (
                 <div className="image-preview">
                   <img
@@ -295,8 +365,10 @@ const ReportItem = () => {
                 {isSubmitting ? (
                   <>
                     <span className="loading"></span>
-                    Submitting...
+                    {isEditMode ? "Updating..." : "Submitting..."}
                   </>
+                ) : isEditMode ? (
+                  "Update Item"
                 ) : (
                   `Report ${formData.type === "lost" ? "Lost" : "Found"} Item`
                 )}
@@ -311,14 +383,22 @@ const ReportItem = () => {
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="modal-content">
               <div className="success-icon">✅</div>
-              <h2 className="modal-title">Item Reported Successfully!</h2>
+
+              <h2 className="modal-title">
+                {isEditMode
+                  ? "Item Updated Successfully!"
+                  : "Item Reported Successfully!"}
+              </h2>
+
               <p className="modal-description">
-                Your {formData.type} item has been added to our database. Other
-                students can now see it and contact you if they have
-                information.
+                Your item has been saved successfully.
               </p>
+
               <div className="modal-actions">
-                <button onClick={closeModal} className="btn btn-primary">
+                <button
+                  onClick={closeModal}
+                  className="btn btn-primary"
+                >
                   View All Items
                 </button>
               </div>
