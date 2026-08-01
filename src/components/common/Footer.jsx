@@ -7,7 +7,7 @@ const Footer = () => {
       <div className="container">
         <div className="footer-content">
           <div className="footer-section">
-            <h3>📚 ABES Lost & Found</h3>
+            <h3> IGDTUW Lost & Found</h3>
             <p>Helping students and staff reconnect with their belongings.</p>
           </div>
 
@@ -28,22 +28,20 @@ const Footer = () => {
 
           <div className="footer-section">
             <h4>Contact Info</h4>
-            <p>📧 aakashasthana6@gmail.com</p>
-            <p>📞 (+91) 8707017802</p>
-            <p>📍 Student Services Building</p>
+            <p>📧 deansw@igdtuw.ac.in</p>
+            <p>📞 011-23900221</p>
+            <p>📍Examination Block</p>
           </div>
 
           <div className="footer-section">
             <h4>Office Hours</h4>
-            <p>Monday - Friday: 8:00 AM - 6:00 PM</p>
-            <p>Saturday: 10:00 AM - 4:00 PM</p>
-            <p>Sunday: Closed</p>
+<p>10:00 AM - 5:00 PM</p>
+            <p>Saturday - Sunday : Closed</p>
           </div>
         </div>
 
         <div className="footer-bottom">
-          <p>&copy; 2025 ABES Lost & Found. All rights reserved.</p>
-          <p>Built with ❤️ for our campus community #Akdon</p>
+          <p>&copy; 2026 IGDTUW Lost & Found. All rights reserved.</p>
         </div>
       </div>
     </footer>

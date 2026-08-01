@@ -387,3 +387,39 @@ label {
 .submit-btn:disabled {
   animation: pulse 2s infinite;
 }
+
+.item-actions{
+    display:flex;
+    gap:15px;
+    justify-content:center;
+    margin-top:30px;
+}
+
+.edit-btn,
+.delete-btn,
+.claim-btn{
+    flex:1;
+    padding:14px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:600;
+}
+
+.edit-btn{
+    background:#3b82f6;
+    color:white;
+}
+
+.delete-btn{
+    background:#ef4444;
+    color:white;
+}
+
+.edit-btn:hover{
+    background:#2563eb;
+}
+
+.delete-btn:hover{
+    background:#dc2626;
+}

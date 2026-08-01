@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { getItems, updateItem } from "../utils/localStorage";
+import {
+  getItems,
+  updateItem,
+  deleteItem,
+} from "../utils/localStorage";
 import "./ItemDetail.css";
-
 const ItemDetail = () => {
+
+  console.log("REAL ITEM DETAIL FILE");
   const { id } = useParams();
+  
   const navigate = useNavigate();
   const [item, setItem] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -31,21 +37,23 @@ const ItemDetail = () => {
   };
 
   const confirmMarkAsClaimed = () => {
-    const items = getItems();
-    const updatedItems = items.map((i) =>
-      i.id === id
-        ? { ...i, claimed: true, claimedDate: new Date().toISOString() }
-        : i
-    );
+  updateItem(id, {
+    claimed: true,
+    claimedDate: new Date().toISOString(),
+  });
 
-    updateItem(updatedItems);
-    setItem({ ...item, claimed: true, claimedDate: new Date().toISOString() });
-    setShowModal(false);
+  setItem({
+    ...item,
+    claimed: true,
+    claimedDate: new Date().toISOString(),
+  });
 
-    setTimeout(() => {
-      navigate("/view-items");
-    }, 2000);
-  };
+  setShowModal(false);
+
+  setTimeout(() => {
+    navigate("/view-items");
+  }, 2000);
+};
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -81,7 +89,13 @@ const ItemDetail = () => {
       </div>
     );
   }
+const handleDelete = () => {
+  if (!window.confirm("Delete this item?")) return;
 
+  deleteItem(id);
+
+  navigate("/view-items");
+};
   return (
     <div className="item-detail">
       <div className="item-detail-container">
@@ -90,13 +104,14 @@ const ItemDetail = () => {
         </button>
 
         <div className="item-detail-card">
+
           <div className="item-header">
             <div className="item-status">
               <span className={`status-badge ${item.type}`}>
                 {item.type === "lost" ? "🔍 Lost" : "✨ Found"}
               </span>
               {item.claimed && (
-                <span className="claimed-badge">✅ Claimed</span>
+                <span className="claimed-badge"> Claimed</span>
               )}
             </div>
             <h1 className="item-title">{item.title}</h1>
@@ -122,57 +137,94 @@ const ItemDetail = () => {
                 <p className="item-description">{item.description}</p>
               </div>
 
-              <div className="info-grid">
-                <div className="info-item">
-                  <span className="info-label">📅 Date</span>
-                  <span className="info-value">{formatDate(item.date)}</span>
-                </div>
+<div className="info-grid">
 
-                <div className="info-item">
-                  <span className="info-label">📍 Location</span>
-                  <span className="info-value">{item.location}</span>
-                </div>
+  <div className="info-item">
+    <span className="info-label">📅 Date</span>
+    <span className="info-value">
+      {item.date
+        ? formatDate(item.date)
+        : item.dateReported
+        ? formatDate(item.dateReported)
+        : "Not Available"}
+    </span>
+  </div>
 
-                <div className="info-item">
-                  <span className="info-label">📞 Contact</span>
-                  <span className="info-value">{item.contact}</span>
-                </div>
+  <div className="info-item">
+    <span className="info-label">📍 Location</span>
+    <span className="info-value">
+      {item.location || "Not Available"}
+    </span>
+  </div>
 
-                <div className="info-item">
-                  <span className="info-label">🏷️ Category</span>
-                  <span className="info-value">{item.category}</span>
-                </div>
+  <div className="info-item">
+    <span className="info-label">👤 Contact</span>
+    <span className="info-value">
+      {item.contactName || "Not Available"}
+    </span>
+  </div>
 
-                <div className="info-item">
-                  <span className="info-label">📝 Reported</span>
-                  <span className="info-value">
-                    {formatDate(item.reportedDate)}
-                  </span>
-                </div>
+  <div className="info-item">
+    <span className="info-label">🏷️ Category</span>
+    <span className="info-value">
+      {item.category || "Not Available"}
+    </span>
+  </div>
 
-                {item.claimed && item.claimedDate && (
-                  <div className="info-item">
-                    <span className="info-label">✅ Claimed On</span>
-                    <span className="info-value">
-                      {formatDate(item.claimedDate)}
-                    </span>
-                  </div>
-                )}
-              </div>
+  <div className="info-item">
+    <span className="info-label">📝 Reported</span>
+    <span className="info-value">
+      {item.dateReported
+        ? formatDate(item.dateReported)
+        : "Not Available"}
+    </span>
+  </div>
+
+  {item.claimed && item.claimedDate && (
+    <div className="info-item">
+      <span className="info-label">✅ Claimed On</span>
+      <span className="info-value">
+        {formatDate(item.claimedDate)}
+      </span>
+    </div>
+  )}
+
+</div>
             </div>
           </div>
+<div className="item-actions">
 
-          {!item.claimed && (
-            <div className="item-actions">
-              <button onClick={handleMarkAsClaimed} className="claim-btn">
-                Mark as Claimed
-              </button>
-            </div>
-          )}
+  {!item.claimed && (
+    <>
+      <button
+        className="edit-btn"
+        onClick={() => navigate(`/edit/${item.id}`)}
+      >
+         Edit
+      </button>
+
+      <button
+        className="claim-btn"
+        onClick={handleMarkAsClaimed}
+      >
+        Mark as Claimed
+      </button>
+    </>
+  )}
+
+  <button
+    className="delete-btn"
+    onClick={handleDelete}
+  >
+     Delete
+  </button>
+
+</div>
+
 
           {item.claimed && (
             <div className="claimed-notice">
-              <p>🎉 This item has been successfully claimed!</p>
+              <p> This item has been successfully claimed!</p>
             </div>
           )}
         </div>

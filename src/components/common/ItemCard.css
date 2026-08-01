@@ -6,7 +6,7 @@
   color: var(--primary-color);
 }
 
-[data-theme='dark'] .item-card {
+[data-theme='dark'] .item-card { 
   background: #1e293b;
   color: #fff;
   border: none;
@@ -153,13 +153,15 @@
 }
 
 .item-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: var(--text-color);
-  margin-bottom: 0.75rem;
-  line-height: 1.4;
-}
+    font-size: 3rem;
+    font-weight: 700;
+    color: #ffffff;
 
+    margin: 12px 0 24px;
+
+    line-height: 1.2;
+    word-break: break-word;
+}
 .item-description {
   color: var(--text-color-light);
   font-size: 0.875rem;
@@ -199,7 +201,7 @@
 
 .verify-btn {
   background: var(--success-color);
-  color: #fff;
+  color: #d82121;
   border: none;
   border-radius: 8px;
   padding: 0.5rem 1.25rem;
@@ -229,8 +231,12 @@
   }
 
   .item-title {
-    font-size: 1.125rem;
-  }
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 12px;
+  line-height: 1.4;
+}
 }
 
 @media (max-width: 900px) {
@@ -241,4 +247,34 @@
   .card-content {
     padding: 0.75rem 0.5rem;
   }
+}
+
+.delete-btn {
+  width: 100%;
+  margin-top: 10px;
+  padding: 12px;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.delete-btn:hover {
+  background: #dc2626;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  padding: 1rem;
+  justify-content: center;
+  border-top: 1px solid #e5e7eb;
+}
+
+.claim-btn,
+.verify-btn,
+.delete-btn {
+  flex: 1;
 }

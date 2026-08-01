@@ -8,7 +8,7 @@ const Home = () => {
       <div className="container">
         <section className="hero">
           <div className="hero-content">
-            <h1 className="hero-title">ABES Lost & Found</h1>
+            <h1 className="hero-title">IGDTUW Lost & Found</h1>
             <p className="hero-description">
               A platform to help students and staff reconnect with their lost
               belongings. Report lost items, browse found items, and help build

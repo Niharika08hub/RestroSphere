@@ -1,8 +1,19 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import "./ItemCard.css";
 
-const ItemCard = ({ item, onClaim }) => {
+const ItemCard = ({ item, onClaim, onDelete }) => {
+  const navigate = useNavigate();
+
+const handleEdit = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
+
+  console.log("Edit clicked", item.id);
+
+  navigate(`/edit/${item.id}`);
+};
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString("en-US", {
       year: "numeric",
@@ -19,80 +30,142 @@ const ItemCard = ({ item, onClaim }) => {
     }
   };
 
-  return (
-    <div className={`item-card ${item.claimed ? "claimed" : ""}`}>
-      <Link to={`/item/${item.id}`} className="card-link">
-        <div className="card-header">
-          <div className="item-type">
-            <span className={`type-badge ${item.type}`}>
-              {item.type === "lost" ? "🔍 Lost" : "🔎 Found"}
-            </span>
-            {item.claimed && <span className="claimed-badge">✅ Claimed</span>}
-          </div>
-          <div className="item-category">{item.category}</div>
-        </div>
+const handleDelete = (e) => {
+  e.preventDefault();
+  e.stopPropagation();
 
-        {item.image && (
-          <div className="card-image">
-            <img
-              src={item.image}
-              alt={item.title}
-              onError={(e) => {
-                e.target.style.display = "none";
-              }}
-            />
-          </div>
-        )}
+  if (!window.confirm("Delete this item?")) return;
 
-        <div className="card-content">
-          <h3 className="item-title">{item.title}</h3>
-          <p className="item-description">{item.description}</p>
-
-          <div className="item-details">
-            <div className="detail-item">
-              <span className="detail-label">📅 Date:</span>
-              <span className="detail-value">
-                {formatDate(item.dateReported)}
-              </span>
-            </div>
-            <div className="detail-item">
-              <span className="detail-label">📍 Location:</span>
-              <span className="detail-value">{item.location}</span>
-            </div>
-            {item.contactInfo && (
-              <div className="detail-item">
-                <span className="detail-label">📞 Contact:</span>
-                <span className="detail-value">{item.contactInfo}</span>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {!item.claimed && onClaim && (
-          <div className="card-actions">
-            <button className="claim-btn" onClick={handleClaim}>
-              Mark as Claimed
-            </button>
-          </div>
-        )}
-
-        {item.claimed && onClaim && (
-          <div className="card-actions">
-            <button
-              className="verify-btn"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onClaim(item.id, true);
-              }}
-            >
-              Verify and Remove
-            </button>
-          </div>
-        )}
-      </Link>
-    </div>
-  );
+  if (onDelete) {
+    onDelete(item.id);
+  }
 };
 
+
+return (
+  <div className={`item-card ${item.claimed ? "claimed" : ""}`}>
+
+    {/* Clickable Card */}
+    <Link to={`/item/${item.id}`} className="card-link">
+
+      <div className="card-header">
+        <div className="item-type">
+          <span className={`type-badge ${item.type}`}>
+            {item.type === "lost" ? "🔍 Lost" : "🔎 Found"}
+          </span>
+
+          {item.claimed && (
+            <span className="claimed-badge">
+              ✅ Claimed
+            </span>
+          )}
+        </div>
+
+        <div className="item-category">
+          {item.category}
+        </div>
+      </div>
+
+      {item.image && (
+        <div className="card-image">
+          <img
+            src={item.image}
+            alt={item.title}
+            onError={(e) => {
+              e.target.style.display = "none";
+            }}
+          />
+        </div>
+      )}
+
+      <div className="card-content">
+
+        <h3 className="item-title">
+          {item.title}
+        </h3>
+
+        <p className="item-description">
+          {item.description}
+        </p>
+
+        <div className="item-details">
+
+         <div className="detail-item">
+  <span className="detail-label">
+     Date :
+  </span>
+
+  <span className="detail-value">
+    {formatDate(item.dateReported)}
+  </span>
+</div>
+
+          <div className="detail-item">
+            <span className="detail-label">
+               Location : 
+            </span>
+
+            <span className="detail-value">
+              {item.location}
+            </span>
+          </div>
+
+          {(item.contactName || item.contactEmail) && (
+            <div className="detail-item">
+              <span className="detail-label">
+                 Contact :
+              </span>
+
+              <span className="detail-value">
+                {item.contactName}
+              </span>
+            </div>
+          )}
+
+        </div>
+
+      </div>
+
+    </Link>
+
+    {/* Buttons OUTSIDE Link */}
+
+    <div className="card-actions">
+
+      {!item.claimed && (
+        <>
+          <button
+            className="edit-btn"
+            onClick={handleEdit}
+          >
+             Edit
+          </button>
+
+          <button
+            className="claim-btn"
+            onClick={handleClaim}
+          >
+            Mark as Claimed
+          </button>
+        </>
+      )}
+
+      <button
+        className="delete-btn"
+        onClick={handleDelete}
+      >
+         Delete
+      </button>
+
+    </div>
+
+    {item.claimed && (
+      <div className="claimed-notice">
+         This item has been claimed.
+      </div>
+    )}
+
+  </div>
+);  
+};
 export default ItemCard;
