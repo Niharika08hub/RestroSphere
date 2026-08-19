@@ -1,3 +1,16 @@
+## Deployment
+
+The application is deployed using:
+
+- Frontend: Vercel
+- Backend: Render
+- Database: MongoDB Atlas
+
+### Live Links
+
+- Frontend: https://restro-sphere-app.vercel.app/
+- Backend API: https://restrosphere.onrender.com?utm_source=chatgpt.com
+- 
 # RestroSphere
 
 RestroSphere is a full-stack, AI-powered restaurant management platform designed to help restaurants manage their digital presence, daily operations, staff, customers, orders, reservations, inventory, and business insights from a single platform.
