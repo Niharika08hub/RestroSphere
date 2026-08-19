@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   FileText,
   IndianRupee,
@@ -83,21 +83,7 @@ function OwnerReports() {
     );
   };
 
-  const maxRevenue = useMemo(() => {
-    if (
-      !report?.dailyReport?.length
-    ) {
-      return 1;
-    }
 
-    return Math.max(
-      ...report.dailyReport.map(
-        (day) =>
-          Number(day.revenue || 0)
-      ),
-      1
-    );
-  }, [report]);
 
   return (
     <div

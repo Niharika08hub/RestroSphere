@@ -6,16 +6,7 @@ import {
   useNavigate,
     Navigate,
 } from "react-router-dom";
-import {
-  Clock3,
-  MapPin,
-  Phone,
-  Mail,
-  Utensils,
-  CalendarDays,
-  ArrowRight,
-  Loader2,
-} from "lucide-react";
+
 import { AnimatePresence, motion } from "framer-motion";
 import RestaurantWebsite from "../pages/RestaurantWebsite";
 import { useEffect, useState } from "react";
@@ -649,15 +640,7 @@ function GoogleSuccess() {
 
 <Route
   path="/r/:slug/customer/dashboard"
-  element={
-    <RestaurantScoped>
-      <ProtectedRoute allowedRoles={["customer"]}>
-        <PageTransition>
-          <CustomerDashboard />
-        </PageTransition>
-      </ProtectedRoute>
-    </RestaurantScoped>
-  }
+  element={<RestaurantCustomerEntry />}
 />
         {/* CUSTOMER DASHBOARD */}
 

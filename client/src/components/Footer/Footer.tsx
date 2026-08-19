@@ -2,7 +2,6 @@ import {
   MapPin,
   Phone,
   Mail,
-  Clock,
 } from "lucide-react";
 import { HashLink } from "react-router-hash-link";
 

@@ -110,7 +110,6 @@ const statusInfo: Record<Status, { label: string; cls: string }> = {
   cancelled: { label: "Cancelled", cls: "bg-red-50 text-red-600" },
 };
 const SectionCard = ({
-  id,
   title,
   subtitle,
   icon: Icon,

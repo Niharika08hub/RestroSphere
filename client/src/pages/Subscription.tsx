@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, Crown, ExternalLink, Loader2, ShieldCheck, Sparkles } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
