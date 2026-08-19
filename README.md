@@ -529,6 +529,9 @@ Payment credentials and secret keys are kept outside the public repository using
 
 ---
 
+## Auhtor
+Niharika ( IGDTUW - B.Tech IT )
+
 ## Project Architecture
 
 ```text
@@ -561,6 +564,3 @@ RestroSphere/
 ├── package.json
 ├── package-lock.json
 └── .gitignore
-
-## Auhtor
-Niharika ( IGDTUW - B.Tech IT )
