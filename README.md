@@ -561,3 +561,6 @@ RestroSphere/
 ├── package.json
 ├── package-lock.json
 └── .gitignore
+
+## Auhtor
+Niharika ( IGDTUW - B.Tech IT )
