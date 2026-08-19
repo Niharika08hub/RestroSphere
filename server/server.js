@@ -18,9 +18,10 @@ app.use(
         return callback(null, true);
       }
 
-    const allowed =
+const allowed =
   /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) ||
-  origin === "https://restro-sphere-app.vercel.app";
+  origin === "https://restro-sphere-app.vercel.app" ||
+  origin === "https://restro-sphere-7j79tb1pi-niharika16.vercel.app";
       if (allowed) {
         return callback(null, true);
       }
