@@ -9,7 +9,7 @@ The application is deployed using:
 ### Live Links
 
 - Frontend: https://restro-sphere-app.vercel.app/
-- Backend API: https://restrosphere.onrender.com?utm_source=chatgpt.com
+- Backend API: https://restrosphere.onrender.com
   
 # RestroSphere
 
