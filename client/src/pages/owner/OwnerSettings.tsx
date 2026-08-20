@@ -79,8 +79,9 @@ const loadSubscription = async () => {
     setSubscriptionLoading(true);
 
     const token =
-      localStorage.getItem("token") ||
-      localStorage.getItem("accessToken");
+  sessionStorage.getItem("token") ||
+  localStorage.getItem("accessToken") ||
+  localStorage.getItem("token");
 
     if (!token) {
       setSubscription(null);
