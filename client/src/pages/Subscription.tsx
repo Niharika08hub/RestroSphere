@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Check, Crown, ExternalLink, Loader2, ShieldCheck, Sparkles } from "lucide-react";
-import { useNavigate } from "react-router-dom";
-
+import { useLocation, useNavigate } from "react-router-dom";
 declare global {
   interface Window {
     Razorpay?: any;
@@ -142,6 +141,12 @@ async function api(path: string, options: RequestInit = {}) {
 
 function Subscription() {
   const navigate = useNavigate();
+  const location = useLocation();
+
+const restaurantSlug =
+  location.pathname.startsWith("/r/")
+    ? location.pathname.split("/")[2]
+    : null;
   const [selected, setSelected] = useState<PlanKey>("quarterly");
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(true);
@@ -275,7 +280,13 @@ function Subscription() {
 
           <button
             type="button"
-            onClick={() => navigate("/owner/dashboard")}
+            onClick={() =>
+  navigate(
+    restaurantSlug
+      ? `/r/${restaurantSlug}/owner/dashboard`
+      : "/owner/dashboard"
+  )
+}
             className="rounded-xl border border-gray-200 px-4 py-2.5 text-sm font-bold hover:border-orange-300 hover:text-orange-600"
           >
             Back to Dashboard
