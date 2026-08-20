@@ -1,6 +1,4 @@
-const API_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://restrosphere.onrender.com/api";
+const API_URL = "https://restrosphere.onrender.com/api";
 export type InventoryItem = {
   _id: string;
   restaurantId: string;
