@@ -20,7 +20,8 @@ app.use(
 
 const allowed =
   /^http:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin) ||
-  /^https:\/\/restro-sphere.*\.vercel\.app$/.test(origin);
+  /^https:\/\/restro-sphere.*\.vercel\.app$/.test(origin) ||
+  origin === "https://restrosphere-1.onrender.com";
       if (allowed) {
         return callback(null, true);
       }
