@@ -849,6 +849,7 @@ if (role === "owner") {
 
   const go = (section: Section) => {
     setActive(section);
+    setMobileSidebarOpen(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -861,14 +862,16 @@ if (role === "owner") {
     </div>
   );
 
- const NavButton = ({ section, icon: Icon, label }: { section: Section; icon: React.ElementType; label: string }) => (
+  const NavButton = ({ section, icon: Icon, label }: { section: Section; icon: React.ElementType; label: string }) => (
     <button
       type="button"
-      onClick={() => {
+      aria-label={label}
+      onClick={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
         go(section);
-        setMobileSidebarOpen(false);
       }}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition cursor-pointer ${
+      className={`relative z-[100] pointer-events-auto w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition cursor-pointer select-none ${
         active === section
           ? "bg-orange-500 text-white shadow-sm"
           : "text-gray-600 hover:bg-orange-50 hover:text-orange-600"
@@ -1083,7 +1086,7 @@ if (role === "owner") {
 )}
 
       <div className="max-w-[1600px] mx-auto flex">
-        <aside className="hidden lg:block w-60 shrink-0 border-r border-gray-200 bg-white min-h-[calc(100vh-68px)] p-4 sticky top-[68px] self-start">
+        <aside className="relative z-[90] hidden lg:block w-60 shrink-0 border-r border-gray-200 bg-white min-h-[calc(100vh-68px)] p-4 sticky top-[68px] self-start pointer-events-auto">
           <p className="px-3 text-[10px] font-bold uppercase tracking-[0.16em] text-gray-400 mb-2">Customer</p>
           <nav className="space-y-1">
   <NavButton section="overview" icon={ShoppingBag} label="Overview"/>
