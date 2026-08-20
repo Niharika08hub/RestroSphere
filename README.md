@@ -2,14 +2,14 @@
 
 The application is deployed using:
 
-- Frontend: Vercel
-- Backend: Render
-- Database: MongoDB Atlas
+- Frontend : Render
+- Backend : Render
+- Database : MongoDB Atlas
 
 ### Live Links
 
-- Frontend: https://restro-sphere-app.vercel.app/
-- Backend API: https://restrosphere.onrender.com/
+- Frontend : https://restrosphere-1.onrender.com
+- Backend API : https://restrosphere.onrender.com/
   
 # RestroSphere
 
