@@ -74,6 +74,8 @@ const loadRazorpay = () =>
 
 const getToken = () =>
   sessionStorage.getItem("token") ||
+  localStorage.getItem("token") ||
+  sessionStorage.getItem("accessToken") ||
   localStorage.getItem("accessToken") ||
   "";
 
@@ -82,7 +84,9 @@ const getRole = () => {
   // Prefer it when available because some auth flows do not
   // put the role in the JWT payload.
   try {
-    const savedUser = localStorage.getItem("user");
+    const savedUser =
+  sessionStorage.getItem("user") ||
+  localStorage.getItem("user");
     if (savedUser) {
       const user = JSON.parse(savedUser);
       const userRole = String(user?.role || "").trim().toLowerCase();
@@ -172,17 +176,6 @@ function Subscription() {
   const startPayment = async () => {
     setError("");
     setMessage("");
-
-    const token = getToken();
-
-    // The backend is responsible for authorizing the owner.
-    // On the frontend, an existing auth token is enough to start
-    // the payment flow. Do not redirect a valid logged-in user
-    // just because the role is stored differently in the JWT/user object.
-    if (!token) {
-      navigate("/login");
-      return;
-    }
 
     try {
       setLoading(true);

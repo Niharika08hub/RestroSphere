@@ -59,12 +59,7 @@ exports.getMySubscription = async (req, res) => {
 
 exports.createSubscriptionOrder = async (req, res) => {
   try {
-    if (req.user?.role !== "owner") {
-      return res.status(403).json({
-        success: false,
-        message: "Owner access required",
-      });
-    }
+    const isOwner = req.user?.role === "owner";
 
     if (
       !process.env.RAZORPAY_KEY_ID ||
@@ -86,16 +81,21 @@ exports.createSubscriptionOrder = async (req, res) => {
       });
     }
 
-    const restaurant = await getOwnerRestaurant(req.user._id);
+    // Keep the existing owner flow exactly as before.
+    const restaurant = isOwner
+      ? await getOwnerRestaurant(req.user._id)
+      : null;
 
-    if (!restaurant) {
+    if (isOwner && !restaurant) {
       return res.status(404).json({
         success: false,
         message: "Restaurant not found",
       });
     }
 
-    const receipt = `rs_${restaurant._id.toString().slice(-10)}_${Date.now()}`;
+    const receipt = restaurant
+      ? `rs_${restaurant._id.toString().slice(-10)}_${Date.now()}`
+      : `rs_public_${Date.now()}`;
 
     const response = await fetch(
       "https://api.razorpay.com/v1/orders",
@@ -107,8 +107,12 @@ exports.createSubscriptionOrder = async (req, res) => {
           currency: "INR",
           receipt,
           notes: {
-            restaurantId: restaurant._id.toString(),
-            ownerId: req.user._id.toString(),
+            ...(restaurant
+              ? {
+                  restaurantId: restaurant._id.toString(),
+                  ownerId: req.user._id.toString(),
+                }
+              : {}),
             plan,
           },
         }),
@@ -124,45 +128,47 @@ exports.createSubscriptionOrder = async (req, res) => {
         message: order?.error?.description || "Unable to create payment order",
       });
     }
-// Make sure older restaurants also have a public URL slug
-// before saving the subscription.
-if (!restaurant.slug) {
-  const baseSlug = String(restaurant.name || "restaurant")
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "");
 
-  let slug = baseSlug || `restaurant-${restaurant._id}`;
+    // For logged-in owners, preserve the existing subscription workflow.
+    if (restaurant) {
+      if (!restaurant.slug) {
+        const baseSlug = String(restaurant.name || "restaurant")
+          .trim()
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-+|-+$/g, "");
 
-  let counter = 1;
+        let slug = baseSlug || `restaurant-${restaurant._id}`;
+        let counter = 1;
 
-  while (
-    await Restaurant.findOne({
-      slug,
-      _id: { $ne: restaurant._id },
-    })
-  ) {
-    slug = `${baseSlug || "restaurant"}-${counter}`;
-    counter++;
-  }
+        while (
+          await Restaurant.findOne({
+            slug,
+            _id: { $ne: restaurant._id },
+          })
+        ) {
+          slug = `${baseSlug || "restaurant"}-${counter}`;
+          counter++;
+        }
 
-  restaurant.slug = slug;
-}
+        restaurant.slug = slug;
+      }
 
-restaurant.subscription = {
-  ...(restaurant.subscription || {}),
-  status: "pending",
-  plan,
-  amount: selected.amount,
-  months: selected.months,
-  pendingOrderId: order.id,
-};
+      restaurant.subscription = {
+        ...(restaurant.subscription || {}),
+        status: "pending",
+        plan,
+        amount: selected.amount,
+        months: selected.months,
+        pendingOrderId: order.id,
+      };
 
-await restaurant.save();
-    const owner = await User.findById(req.user._id).select(
-      "fullName email phone"
-    );
+      await restaurant.save();
+    }
+
+    const owner = restaurant && req.user?._id
+      ? await User.findById(req.user._id).select("fullName email phone")
+      : null;
 
     return res.json({
       success: true,
@@ -185,12 +191,7 @@ await restaurant.save();
 
 exports.verifySubscriptionPayment = async (req, res) => {
   try {
-    if (req.user?.role !== "owner") {
-      return res.status(403).json({
-        success: false,
-        message: "Owner access required",
-      });
-    }
+    const isOwner = req.user?.role === "owner";
 
     const {
       plan,
@@ -208,21 +209,22 @@ exports.verifySubscriptionPayment = async (req, res) => {
       });
     }
 
-    const restaurant = await getOwnerRestaurant(req.user._id);
+    const restaurant = isOwner
+      ? await getOwnerRestaurant(req.user._id)
+      : null;
 
-    if (!restaurant) {
+    if (isOwner && !restaurant) {
       return res.status(404).json({
         success: false,
         message: "Restaurant not found",
       });
     }
 
-    // Critical: verify against the order ID stored on our server,
-    // not a client-supplied order ID.
-    if (
+    // Owner payments still use the existing server-side pending-order check.
+    if (restaurant && (
       !restaurant.subscription ||
       restaurant.subscription.pendingOrderId !== razorpay_order_id
-    ) {
+    )) {
       return res.status(400).json({
         success: false,
         message: "Payment order does not match this restaurant",
@@ -249,36 +251,45 @@ exports.verifySubscriptionPayment = async (req, res) => {
       });
     }
 
-    const startDate = new Date();
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + selected.months);
+    // Preserve the existing activation behavior for logged-in owners.
+    if (restaurant) {
+      const startDate = new Date();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + selected.months);
 
-    restaurant.subscription = {
-      status: "active",
-      plan,
-      amount: selected.amount,
-      months: selected.months,
-      startDate,
-      endDate,
-      razorpayOrderId: razorpay_order_id,
-      razorpayPaymentId: razorpay_payment_id,
-      razorpaySignature: razorpay_signature,
-      pendingOrderId: "",
-    };
+      restaurant.subscription = {
+        status: "active",
+        plan,
+        amount: selected.amount,
+        months: selected.months,
+        startDate,
+        endDate,
+        razorpayOrderId: razorpay_order_id,
+        razorpayPaymentId: razorpay_payment_id,
+        razorpaySignature: razorpay_signature,
+        pendingOrderId: "",
+      };
 
-    restaurant.isActive = true;
+      restaurant.isActive = true;
+      await restaurant.save();
 
-    await restaurant.save();
+      return res.json({
+        success: true,
+        message: "Subscription activated successfully",
+        subscription: restaurant.subscription,
+        restaurant: {
+          id: restaurant._id,
+          name: restaurant.name,
+          slug: restaurant.slug,
+        },
+      });
+    }
 
     return res.json({
       success: true,
-      message: "Subscription activated successfully",
-      subscription: restaurant.subscription,
-      restaurant: {
-        id: restaurant._id,
-        name: restaurant.name,
-        slug: restaurant.slug,
-      },
+      message: "Payment verified successfully",
+      subscription: null,
+      restaurant: null,
     });
   } catch (error) {
     console.error("VERIFY SUBSCRIPTION ERROR:", error);

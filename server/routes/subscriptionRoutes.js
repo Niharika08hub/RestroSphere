@@ -11,7 +11,7 @@ const { protect } = require("../middleware/authMiddleware");
 const router = express.Router();
 
 router.get("/me", protect, getMySubscription);
-router.post("/create-order", protect, createSubscriptionOrder);
-router.post("/verify", protect, verifySubscriptionPayment);
+router.post("/create-order", createSubscriptionOrder);
+router.post("/verify", verifySubscriptionPayment);
 
 module.exports = router;

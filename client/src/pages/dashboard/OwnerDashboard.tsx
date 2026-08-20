@@ -277,8 +277,29 @@ const handleToday = async () => {
     return;
   }
 
+  const restaurantSlug =
+    sessionStorage.getItem("restaurantSlug") ||
+    (() => {
+      try {
+        const savedRestaurant =
+          sessionStorage.getItem("selectedRestaurant");
+
+        return savedRestaurant
+          ? JSON.parse(savedRestaurant)?.slug || ""
+          : "";
+      } catch {
+        return "";
+      }
+    })();
+
   logout();
-  navigate("/login", { replace: true });
+
+  navigate(
+    restaurantSlug
+      ? `/r/${restaurantSlug}/login`
+      : "/login",
+    { replace: true }
+  );
 };
 
   return (

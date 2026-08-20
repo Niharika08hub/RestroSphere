@@ -211,9 +211,7 @@ const getDashboard = (role: string) => {
 
     try {
       setLoading(true);
-const response = await fetch(
-  `${import.meta.env.VITE_API_URL}/auth/login`,
-  {
+const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -271,8 +269,13 @@ const response = await fetch(
       );
 
       const loggedInRole = user?.role || form.role;
-
-      window.location.href = getDashboard(loggedInRole);
+if (loggedInRole === "customer") {
+  window.location.href = restaurantSlug
+    ? `/r/${restaurantSlug}/customer/dashboard`
+    : "/customer/dashboard";
+} else {
+  window.location.href = getDashboard(loggedInRole);
+}
     } catch (error) {
       setMessage(
         error instanceof Error
