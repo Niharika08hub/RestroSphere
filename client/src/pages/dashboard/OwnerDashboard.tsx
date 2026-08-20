@@ -199,8 +199,7 @@ const loadSubscription = async () => {
       setSubscription(null);
       return;
     }
-
-    const response = await fetch("/api/subscriptions/me", {
+const response = await fetch("https://restrosphere.onrender.com/api/subscriptions/me", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
