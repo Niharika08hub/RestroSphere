@@ -9,7 +9,7 @@ The application is deployed using:
 ### Live Links
 
 - Frontend: https://restro-sphere-app.vercel.app/
-- Backend API: https://restrosphere.onrender.com
+- Backend API: https://restrosphere.onrender.com/
   
 # RestroSphere
 
